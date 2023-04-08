@@ -1,0 +1,168 @@
+@model Exam.ViewModels.VmSale
+@{
+    ViewData["Title"] = "Single";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var listSaleMaster = ViewData["List"] as List<Exam.Model.SalesMaster>;
+    var ButtonValue = Model.SaleId > 0 ? "Update" : "Add";
+    var indexItem = 0;
+}
+@using (Html.BeginForm(
+     "Single",
+     "Sales"
+ ))
+{
+  @Html.AntiForgeryToken()
+  @Html.HiddenFor(m => m.SaleId)
+
+  @Html.LabelFor(m => m.CustomerName)
+  @Html.TextBoxFor(m => m.CustomerName)
+
+  <button type="submit" id="btnUpdate">@ButtonValue</button>
+  <a href="/Sales/Single">Reset</a>
+
+  <div>
+     <table>
+        <thead>
+            <tr>
+               <th>ProductName</th>
+               <th>Price</th>
+               <th>Quantity</th>
+               <th>Total</th>
+               <th>
+               <button type="button" onclick="addItem();" class="btn btn-info">Add Item</button>
+               </th>
+             </tr>
+         </thead>
+
+         <tbody id="tSD">
+         @foreach (var item in Model.SaleDetails)
+         {
+         indexItem++;
+         <tr id="tr_@indexItem">
+         <td>
+         <input type="text" id="ProductName_@indexItem" name="ProductName" value="@item.ProductName" />
+         </td>
+
+        <td><a href="javascript:void(0)" onclick="removeItem(@indexItem);">Remove</a></td>
+        </tr>
+        }
+        </tbody>
+
+       </table>
+    </div>
+}
+
+<table class="table">
+    <tr>
+        <th>Date</th>
+        <th>Customer Name</th>
+        <th>Address</th>
+        <th colspan="2">Action</th> 
+    </tr>
+    @foreach (var item in listSaleMaster)
+    {
+        <tr>
+            <td>@item.CustomerName</td>
+            <td><a href="/Home/Single?id=@item.SaleId">Edit</a></td>
+            <td><a href="/Home/SingleDelete?id=@item.SaleId" onclick="return confirm('Are you sure to delete?')">Delete</a></td>
+        </tr>
+    }
+</table>
+
+<script>
+    var indexItem = @indexItem;
+    function addItem() {
+        indexItem += 1;
+        var TRs = '<tr id="tr_' + indexItem + '"><td><input type="text" id="ProductName_1" name="ProductName" value="" /></td>'           
+            + '<td><a href="javascript:void(0)" onclick="removeItem(' + indexItem + ')">Remove</a></td>'
+            + '</tr>';
+        document.getElementById('tSD').innerHTML += TRs;
+    }
+
+    function removeItem(id) {
+        document.getElementById('tr_' + id).remove();
+    }
+
+</script>
+
+//-----------------------------------------------------------------------------------------------
+DataContext db = new DataContext();
+[HttpGet]
+public IActionResult Single(int? id)
+{
+ VmSale oSale = null;
+ var oSM = db.SalesMasters.Where(x => x.SaleId == id).FirstOrDefault();
+ if (oSM != null)
+ {
+ oSale = new VmSale();
+ oSale.CustomerName = oSM.CustomerName;
+ oSale.SaleId = oSM.SaleId;
+ var listSaleDetail = new List<VmSale.VmSaleDetail>();
+ var listSD = db.SalesDetails.Where(x => x.SaleId == id).ToList();
+ foreach (var oSD in listSD)
+ {
+ var oSaleDetail = new VmSale.VmSaleDetail();
+ oSaleDetail.ProductName = oSD.ProductName;
+ oSaleDetail.SaleDetailId = oSD.SaleDetailId;
+ oSaleDetail.SaleId = oSD.SaleId;
+ listSaleDetail.Add(oSaleDetail);
+ }
+ oSale.SaleDetails = listSaleDetail;
+ }
+ oSale = oSale == null ? new VmSale() : oSale;
+ ViewData["List"] = db.SalesMasters.ToList();
+ return View(oSale);
+ }
+
+ [HttpPost]
+ [ValidateAntiForgeryToken]
+ public IActionResult Single(VmSale model)
+ { 
+ var oSaleMaster = db.SalesMasters.Find(model.SaleId);
+ if (oSaleMaster == null)
+ {
+ oSaleMaster = new SalesMaster();
+ oSaleMaster.CustomerName = model.CustomerName;
+ db.SalesMasters.Add(oSaleMaster);
+ ViewBag.Message = "Inserted Successfully";
+ }
+ else
+ {
+ oSaleMaster.CustomerName = model.CustomerName;
+ ViewBag.Message = "Update Successfully";
+ var listSaleDetailRem = db.SalesDetails.Where(x => x.SaleId == oSaleMaster.SaleId).ToList();
+ db.SalesDetails.RemoveRange(listSaleDetailRem);
+ }
+ db.SaveChanges();
+ var listSaleDetail = new List<SalesDetail>();
+ for (var i = 0; i < model.ProductName.Length; i++)
+ {
+ if (!string.IsNullOrEmpty(model.ProductName[i]))
+ {
+ var oSaleDetail = new SalesDetail();
+ oSaleDetail.ProductName = model.ProductName[i];
+ oSaleDetail.SaleId = oSaleMaster.SaleId;
+ listSaleDetail.Add(oSaleDetail);
+ }
+ else
+ {
+ ViewBag.Message = "Product name or attachment required.";
+ }
+ }
+ db.SalesDetails.AddRange(listSaleDetail);
+ db.SaveChanges();
+ return RedirectToAction("Single");
+ }
+
+ [HttpGet]
+ public IActionResult SingleDelete(int id)
+ { 
+ var oSaleMaster = (from o in db.SalesMasters where o.SaleId == id select o).FirstOrDefault();
+ if (oSaleMaster != null)
+ {
+ db.SalesMasters.Remove(oSaleMaster);
+ db.SaveChanges();
+ }
+ return RedirectToAction("Single");
+ }
+}
