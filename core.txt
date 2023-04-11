@@ -2,7 +2,7 @@
 @{
     ViewData["Title"] = "Single";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    var listSaleMaster = ViewData["List"] as List<Exam.Models.SalesMaster>;
+    var listSaleMaster = ViewData["List"] as List<Exam.Models.SaleMaster>;
     var ButtonValue = Model.SaleId > 0 ? "Update" : "Add";
     var indexItem = 0;
 }
@@ -111,12 +111,12 @@ public IActionResult Single(int? id)
  [ValidateAntiForgeryToken]
  public IActionResult Single(VmSale model)
  { 
- var oSaleMaster = db.SalesMasters.Find(model.SaleId);
+ var oSaleMaster = db.SaleMasters.Find(model.SaleId);
  if (oSaleMaster == null)
  {
- oSaleMaster = new SalesMaster();
+ oSaleMaster = new SaleMaster();
  oSaleMaster.CustomerName = model.CustomerName;
- db.SalesMasters.Add(oSaleMaster);
+ db.SaleMasters.Add(oSaleMaster);
  ViewBag.Message = "Inserted Successfully";
  }
  else
@@ -127,7 +127,7 @@ public IActionResult Single(int? id)
  db.SalesDetails.RemoveRange(listSaleDetailRem);
  }
  db.SaveChanges();
- var listSaleDetail = new List<SalesDetail>();
+ var listSaleDetail = new List<SaleDetail>();
  for (var i = 0; i < model.ProductName.Length; i++)
  {
  if (!string.IsNullOrEmpty(model.ProductName[i]))
