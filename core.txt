@@ -2,7 +2,7 @@
 @{
     ViewData["Title"] = "Single";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    var listSaleMaster = ViewData["List"] as List<Exam.Model.SalesMaster>;
+    var listSaleMaster = ViewData["List"] as List<Exam.Models.SalesMaster>;
     var ButtonValue = Model.SaleId > 0 ? "Update" : "Add";
     var indexItem = 0;
 }
@@ -25,9 +25,6 @@
         <thead>
             <tr>
                <th>ProductName</th>
-               <th>Price</th>
-               <th>Quantity</th>
-               <th>Total</th>
                <th>
                <button type="button" onclick="addItem();" class="btn btn-info">Add Item</button>
                </th>
@@ -54,17 +51,15 @@
 
 <table class="table">
     <tr>
-        <th>Date</th>
         <th>Customer Name</th>
-        <th>Address</th>
         <th colspan="2">Action</th> 
     </tr>
     @foreach (var item in listSaleMaster)
     {
         <tr>
             <td>@item.CustomerName</td>
-            <td><a href="/Home/Single?id=@item.SaleId">Edit</a></td>
-            <td><a href="/Home/SingleDelete?id=@item.SaleId" onclick="return confirm('Are you sure to delete?')">Delete</a></td>
+            <td><a href="/Sales/Single?id=@item.SaleId">Edit</a></td>
+            <td><a href="/Sales/SingleDelete?id=@item.SaleId" onclick="return confirm('Are you sure to delete?')">Delete</a></td>
         </tr>
     }
 </table>
@@ -73,9 +68,7 @@
     var indexItem = @indexItem;
     function addItem() {
         indexItem += 1;
-        var TRs = '<tr id="tr_' + indexItem + '"><td><input type="text" id="ProductName_1" name="ProductName" value="" /></td>'           
-            + '<td><a href="javascript:void(0)" onclick="removeItem(' + indexItem + ')">Remove</a></td>'
-            + '</tr>';
+        var TRs = '<tr id="tr_' + indexItem + '"><td><input type="text" id="ProductName_1" name="ProductName" value="" /></td>' + '<td><a href="javascript:void(0)" onclick="removeItem(' + indexItem + ')">Remove</a></td>'+ '</tr>';
         document.getElementById('tSD').innerHTML += TRs;
     }
 
@@ -91,14 +84,14 @@ DataContext db = new DataContext();
 public IActionResult Single(int? id)
 {
  VmSale oSale = null;
- var oSM = db.SalesMasters.Where(x => x.SaleId == id).FirstOrDefault();
+ var oSM = db.SaleMasters.Where(x => x.SaleId == id).FirstOrDefault();
  if (oSM != null)
  {
  oSale = new VmSale();
  oSale.CustomerName = oSM.CustomerName;
  oSale.SaleId = oSM.SaleId;
  var listSaleDetail = new List<VmSale.VmSaleDetail>();
- var listSD = db.SalesDetails.Where(x => x.SaleId == id).ToList();
+ var listSD = db.SaleDetails.Where(x => x.SaleId == id).ToList();
  foreach (var oSD in listSD)
  {
  var oSaleDetail = new VmSale.VmSaleDetail();
@@ -130,7 +123,7 @@ public IActionResult Single(int? id)
  {
  oSaleMaster.CustomerName = model.CustomerName;
  ViewBag.Message = "Update Successfully";
- var listSaleDetailRem = db.SalesDetails.Where(x => x.SaleId == oSaleMaster.SaleId).ToList();
+ var listSaleDetailRem = db.SaleDetails.Where(x => x.SaleId == oSaleMaster.SaleId).ToList();
  db.SalesDetails.RemoveRange(listSaleDetailRem);
  }
  db.SaveChanges();
@@ -149,7 +142,7 @@ public IActionResult Single(int? id)
  ViewBag.Message = "Product name or attachment required.";
  }
  }
- db.SalesDetails.AddRange(listSaleDetail);
+ db.SaleDetails.AddRange(listSaleDetail);
  db.SaveChanges();
  return RedirectToAction("Single");
  }
@@ -157,10 +150,10 @@ public IActionResult Single(int? id)
  [HttpGet]
  public IActionResult SingleDelete(int id)
  { 
- var oSaleMaster = (from o in db.SalesMasters where o.SaleId == id select o).FirstOrDefault();
+ var oSaleMaster = (from o in db.SaleMasters where o.SaleId == id select o).FirstOrDefault();
  if (oSaleMaster != null)
  {
- db.SalesMasters.Remove(oSaleMaster);
+ db.SaleMasters.Remove(oSaleMaster);
  db.SaveChanges();
  }
  return RedirectToAction("Single");
