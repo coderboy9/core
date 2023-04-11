@@ -1,7 +1,7 @@
 @model Exam.ViewModels.VmSale
 @{
     ViewData["Title"] = "Single";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "none";
     var listSaleMaster = ViewData["List"] as List<Exam.Models.SaleMaster>;
     var ButtonValue = Model.SaleId > 0 ? "Update" : "Add";
     var indexItem = 0;
@@ -132,7 +132,7 @@ public IActionResult Single(int? id)
  {
  if (!string.IsNullOrEmpty(model.ProductName[i]))
  {
- var oSaleDetail = new SalesDetail();
+ var oSaleDetail = new SaleDetail();
  oSaleDetail.ProductName = model.ProductName[i];
  oSaleDetail.SaleId = oSaleMaster.SaleId;
  listSaleDetail.Add(oSaleDetail);
