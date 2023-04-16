@@ -1,7 +1,6 @@
 @model Exam.ViewModels.VmSale
 @{
     ViewData["Title"] = "Single";
-    Layout = "none";
     var listSaleMaster = ViewData["List"] as List<Exam.Models.SaleMaster>;
     var ButtonValue = Model.SaleId > 0 ? "Update" : "Add";
     var indexItem = 0;
@@ -26,7 +25,7 @@
             <tr>
                <th>ProductName</th>
                <th>
-               <button type="button" onclick="addItem();" class="btn btn-info">Add Item</button>
+               <button type="button" onclick="addItem();">Add Item</button>
                </th>
              </tr>
          </thead>
@@ -79,7 +78,11 @@
 </script>
 
 //-----------------------------------------------------------------------------------------------
-DataContext db = new DataContext();
+private readonly DataConnectio db;
+public SalesController(DataConnectio _db)
+{
+db = _db;
+}
 [HttpGet]
 public IActionResult Single(int? id)
 {
@@ -103,7 +106,7 @@ public IActionResult Single(int? id)
  oSale.SaleDetails = listSaleDetail;
  }
  oSale = oSale == null ? new VmSale() : oSale;
- ViewData["List"] = db.SalesMasters.ToList();
+ ViewData["List"] = db.SaleMasters.ToList();
  return View(oSale);
  }
 
@@ -124,7 +127,7 @@ public IActionResult Single(int? id)
  oSaleMaster.CustomerName = model.CustomerName;
  ViewBag.Message = "Update Successfully";
  var listSaleDetailRem = db.SaleDetails.Where(x => x.SaleId == oSaleMaster.SaleId).ToList();
- db.SalesDetails.RemoveRange(listSaleDetailRem);
+ db.SaleDetails.RemoveRange(listSaleDetailRem);
  }
  db.SaveChanges();
  var listSaleDetail = new List<SaleDetail>();
